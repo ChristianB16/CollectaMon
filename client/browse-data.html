@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollectaMon</title>
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+    <link href="/client/css/stylesheet.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script src="js/browse-data.js"></script>
+</head>
+
+<body ng-app="browseCards" ng-controller="browseCardsCtrl">
+    <div class="banner">
+        <div class="navbar">
+            <img class="logo" src="img/pokeball.png">
+            <ul>
+                <li><a href="/client/index.html">Home</a></li>
+                <li><a href="/client/enterData.html">Enter Data</a></li>
+                <li><a href="/client/viewData.html">View Data</a></li>
+                <li><a href="/client/browse-Data.html">Browse Data</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- labels and boxes for cards -->
+        <div>
+            <label for="name">Name: </label>
+            <label style=" color: blue;" id="name">{{obj.name}}</label>
+        </div>
+
+        <div>
+            <label for="type">Type: </label>
+            <label style=" color: blue;" id="type">{{obj.type}}</label>
+        </div>
+
+        <div>
+            <label for="ability">Ability: </label>
+            <label style=" color: blue;" id="ability">{{obj.ability}}</label>
+        </div>
+
+        <div>
+            <label for="attack">Attack: </label>
+            <label style=" color: blue;" id="attack">{{obj.attack}}</label>
+        </div>
+
+        <div>
+            <label for="set">Set: </label>
+            <label style=" color: blue;" id="set">{{obj.set}}</label>
+        </div>
+
+        <div>
+            <label for="setNumber">Set Number: </label>
+            <label style=" color: blue;" id="setNumber">{{obj.setNumber}}</label>
+        </div>
+
+        <div>
+            <label for="price">Price: </label>
+            <label style=" color: blue;" id="price">{{obj.price}}</label>
+        </div>
+
+
+        <div class="button-container">
+            <div class="config-buttons">
+                <div id="previous" ng-click="changeCard(-1)" ng-hide="hidePrev" class="edit_btn"><span></span>&lt&lt&lt Previous</div>
+            </div>
+    
+            <div class="config-buttons">
+                <div id="next" ng-click="changeCard(1)" ng-hide="hideNext" class="edit_btn"><span></span>Next &gt&gt&gt</div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>
