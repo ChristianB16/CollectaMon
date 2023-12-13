@@ -1,5 +1,4 @@
 var pokeUrl = "http://localhost:5000";
-
 var jsonObject = [
   {"id":"","name": "Gengar & Mimikyu GX", "type": "Psychic", "ability": "N/A", "attack": "Poltergeist", "set": "Team Up", "setNumber": "53", "price": "$15"},
 ];
@@ -17,8 +16,10 @@ function retrieveData() {
     type: 'get',
     success: function (response) {
       var data = JSON.parse(response);
-      if (data.msg == "SUCCESS") {
-        jsonObject = data.pokeData; 
+      console.log("Server Response:", data);
+
+      if (data.msg === "SUCCESS") {
+        jsonObject = data.pokemon || [];
         showTable();
         deleteBtnListeners();
       } else {
@@ -26,7 +27,7 @@ function retrieveData() {
       }
     },
     error: function (err) {
-      console.log(err);
+      console.log("Error retrieving data:", err);
     }
   });
 }
@@ -34,8 +35,9 @@ function retrieveData() {
 function deleteRecord(name) {
   console.log("Deleting record with name:", name);
   $.ajax({
-    url: pokeUrl + '/delete-record/' + name,
+    url: pokeUrl + '/delete-records',
     type: 'delete',
+    data: { name: name },
     success: function (response) {
       var data = JSON.parse(response);
       if (data.msg === "SUCCESS") {
@@ -54,13 +56,18 @@ function deleteRecord(name) {
 function deleteBtnListeners() {
   $(".delete-btn").click(function () {
     var id = $(this).data("id");
-    var name = jsonObject[id].name;
-    deleteRecord(name);
+    var name = jsonObject[id] ? jsonObject[id].name : null;
+    if (name) {
+      deleteRecord(name);
+    } else {
+      console.log("Invalid record id or name:", id, name);
+    }
   });
 }
 
 function showTable() {
   var htmlString = "";
+
   for (var i = 0; i < jsonObject.length; i++) {
     htmlString += "<tr>";
     htmlString += "<td>" + jsonObject[i].name + "</td>";
@@ -77,6 +84,7 @@ function showTable() {
   $("#cardTable").html(htmlString);
 }
 
+
 $("#refresh").click(function () {
   var newCard = {
     name: "New Card",
@@ -88,10 +96,8 @@ $("#refresh").click(function () {
     price: "$10"
   };
 
-  // Add the new card to the jsonObject
   jsonObject.push(newCard);
 
-  // Update the server with the new data
   $.ajax({
     url: pokeUrl + '/write-record',
     type: 'post',
@@ -109,6 +115,5 @@ $("#refresh").click(function () {
     }
   });
 
-  // Update the table
   showTable();
 });

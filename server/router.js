@@ -21,6 +21,12 @@ var router = function (app) {
       .status(200)
       .sendFile(path.join(__dirname + "/../client/viewData.html"));
   });
+
+  app.get("/BrowseData", function (req, res) {
+    res
+      .status(200)
+      .sendFile(path.join(__dirname + "/../client/browse-data.html"));
+  });
 };
 
 module.exports = router;

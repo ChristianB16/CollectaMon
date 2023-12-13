@@ -1,6 +1,5 @@
 var cards = [];
 var activeCard = 0;
-
 const pokeUrl = "http://localhost:5000";
 
 
