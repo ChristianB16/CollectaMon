@@ -1,119 +1,109 @@
-var pokeUrl = "http://localhost:5000";
-var jsonObject = [
-  {"id":"","name": "Gengar & Mimikyu GX", "type": "Psychic", "ability": "N/A", "attack": "Poltergeist", "set": "Team Up", "setNumber": "53", "price": "$15"},
-];
+var collectaMonApp = angular.module('collectaMonApp', []);
 
-main();
+collectaMonApp.controller('ViewDataController', function ($scope, $http) {
+    var pokeUrl = "http://localhost:5000";
+    $scope.cardData = [];
+    $scope.card = {};
+    $scope.types = [];
+    $scope.selectedType = {};
+    $scope.hideTable = true; 
 
-function main() {
-  console.log(jsonObject);
-  retrieveData();
-}
+    function retrieveData() {
+        $http.get(pokeUrl + '/get-records')
+            .then(function (response) {
+                var data = response.data;
+                if (data.msg === "SUCCESS") {
+                    $scope.cardData = data.pokeData || [];
+                    $scope.types = getTypes($scope.cardData);
+                    $scope.selectedType = $scope.types[0];
+                } else {
+                    console.log(data.msg);
+                }
+            });
+    }
 
-function retrieveData() {
-  $.ajax({
-    url: pokeUrl + '/get-records',
-    type: 'get',
-    success: function (response) {
-      var data = JSON.parse(response);
-      console.log("Server Response:", data);
+    function getTypes(cardData) {
+      var typeExists;
+      var typesArray = [{ value: "", display: "ALL" }];
 
-      if (data.msg === "SUCCESS") {
-        jsonObject = data.pokemon || [];
-        showTable();
-        deleteBtnListeners();
-      } else {
-        console.log(data.msg);
+      for (var i = 0; i < cardData.length; i++) {
+          typeExists = typesArray.find(function (element) {
+              return element.value === cardData[i].type;
+          });
+
+          if (typeExists) {
+              continue;
+          } else {
+              typesArray.push({ value: cardData[i].type, display: cardData[i].type.toUpperCase() });
+          }
       }
-    },
-    error: function (err) {
-      console.log("Error retrieving data:", err);
-    }
-  });
-}
 
-function deleteRecord(name) {
-  console.log("Deleting record with name:", name);
-  $.ajax({
-    url: pokeUrl + '/delete-records',
-    type: 'delete',
-    data: { name: name },
-    success: function (response) {
-      var data = JSON.parse(response);
-      if (data.msg === "SUCCESS") {
-        console.log("Record Deleted");
-        retrieveData();
-      } else {
-        console.log(data.msg);
-      }
-    },
-    error: function (err) {
-      console.log(err);
-    }
-  });
-}
-
-function deleteBtnListeners() {
-  $(".delete-btn").click(function () {
-    var id = $(this).data("id");
-    var name = jsonObject[id] ? jsonObject[id].name : null;
-    if (name) {
-      deleteRecord(name);
-    } else {
-      console.log("Invalid record id or name:", id, name);
-    }
-  });
-}
-
-function showTable() {
-  var htmlString = "";
-
-  for (var i = 0; i < jsonObject.length; i++) {
-    htmlString += "<tr>";
-    htmlString += "<td>" + jsonObject[i].name + "</td>";
-    htmlString += "<td>" + jsonObject[i].type + "</td>";
-    htmlString += "<td>" + jsonObject[i].ability + "</td>";
-    htmlString += "<td>" + jsonObject[i].attack + "</td>";
-    htmlString += "<td>" + jsonObject[i].set + "</td>";
-    htmlString += "<td>" + jsonObject[i].setNumber + "</td>";
-    htmlString += "<td>" + jsonObject[i].price + "</td>";
-    htmlString += "<td><button class='delete-btn' data-id='" + i + "'>Delete</button></td>";
-    htmlString += "</tr>";
+      return typesArray;
   }
 
-  $("#cardTable").html(htmlString);
+  $scope.redrawTable = function () {
+    var type = $scope.selectedType;
+
+    $http({
+        method: 'get',
+        url: pokeUrl + "/get-recordsByType",
+        params: { type: type }
+    }).then(function (response) {
+        if (response.data.msg === "SUCCESS") {
+            $scope.cardData = response.data.pokeData;
+        }
+    }, function (response) {
+        console.log(JSON.stringify(response));
+    });
 }
 
 
-$("#refresh").click(function () {
-  var newCard = {
-    name: "New Card",
-    type: "New Type",
-    ability: "New Ability",
-    attack: "New Attack",
-    set: "New Set",
-    setNumber: "54",
-    price: "$10"
-  };
+    $scope.deleteRecord = function (name) {
+        $http.delete(pokeUrl + '/delete-records', { params: { name: name } })
+            .then(function (response) {
+                var data = response.data;
+                if (data.msg === "SUCCESS") {
+                    retrieveData();
+                } else {
+                    console.log(data.msg);
+                }
+            });
+    };
 
-  jsonObject.push(newCard);
+    $scope.editRecord = function (card) {
+        $scope.card = angular.copy(card);
+        $scope.hideTable = false;
+    };
 
-  $.ajax({
-    url: pokeUrl + '/write-record',
-    type: 'post',
-    data: { pokeData: jsonObject },
-    success: function(response){
-      var data = JSON.parse(response);
-      if(data.msg === "SUCCESS"){
-        console.log("Data Saved");
-      } else {
-        console.log(data.msg);
-      }
-    },
-    error:function(err){
-      console.log(err);
-    }
-  });
+    $scope.cancelUpdate = function () {
+        $scope.hideTable = true;
+        $scope.card = {}; 
+    };
 
-  showTable();
+    $scope.updateCard = function () {
+        var updatedCard = {
+            _id: $scope.card._id,
+            name: $scope.cardName,
+            type: $scope.cardType,
+            ability: $scope.cardAbility,
+            attack: $scope.cardAttack,
+            set: $scope.cardSet,
+            setNumber: $scope.cardSetNumber,
+            price: $scope.cardPrice
+        };
+
+        $http.put(pokeUrl + '/update-record', updatedCard)
+            .then(function (response) {
+                var data = response.data;
+                if (data.msg === "SUCCESS") {
+                    retrieveData();
+                    $scope.hideTable = true;
+                    $scope.card = {};
+                } else {
+                    console.log(data.msg);
+                }
+            });
+    };
+
+    retrieveData();
 });

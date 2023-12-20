@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="collectaMonApp">
+
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CollectaMon</title>
     <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-    <link href="/client/css/view-data.css"rel="stylesheet">
+    <link href="/client/css/view-data.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
     <script src="/client/js/view-data.js" async></script>
 </head>
 
-<body>
+<body ng-controller="ViewDataController">
     <div class="banner">
         <div class="navbar">
             <img class="logo" src="img/pokeball.png">
@@ -23,7 +25,16 @@
     </div>
 
     <div class="content">
-        <div>
+        <div style="margin-left: 70px;">
+            <label for="groupby">Spell Type:</label>
+            <select id="groupby"
+                    ng-model="selectedType"
+                    ng-options="type.value as type.display for type in types"
+                    ng-change="redrawTable()">
+            </select>
+        </div>
+        
+        <div ng-show="hideTable">
             <table class="table">
                 <colgroup>
                     <col class='col-xs-3'>
@@ -37,14 +48,51 @@
                         <th>Set</th>
                         <th>Set Number</th>
                         <th>Price</th>
-                        <th></th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id='cardTable'></tbody>
+                <tbody>
+                    <tr ng-repeat="card in cardData">
+                        <td>{{ card.name }}</td>
+                        <td>{{ card.type }}</td>
+                        <td>{{ card.ability }}</td>
+                        <td>{{ card.attack }}</td>
+                        <td>{{ card.set }}</td>
+                        <td>{{ card.setNumber }}</td>
+                        <td>{{ card.price }}</td>
+                        <td>
+                            <button class='edit-btn' ng-click="editRecord(card)">Edit</button>
+                            <button class='delete-btn' ng-click="deleteRecord(card.name)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         </div>
 
         <div id="test"></div>
     </div>
+
+    <div class="content" ng-show="!hideTable">
+        <form ng-submit="updateCard()">
+            <label>Name:</label>
+            <input type="text" ng-model="cardName" ng-change="startNew()" required><br>
+            <label>Type:</label>
+            <input type="text" ng-model="cardType" ng-change="startNew()" required><br>
+            <label>Ability:</label>
+            <input type="text" ng-model="cardAbility" ng-change="startNew()" required><br>
+            <label>Attack:</label>
+            <input type="text" ng-model="cardAttack" ng-change="startNew()" required><br>
+            <label>Set:</label>
+            <input type="text" ng-model="cardSet" ng-change="startNew()" required><br>
+            <label>Set Number:</label>
+            <input type="text" ng-model="cardSetNumber" ng-change="startNew()" required><br>
+            <label>Price:</label>
+            <input type="text" ng-model="cardPrice" ng-change="startNew()" required><br>
+            <button id="submit" data-ng-click="updateSpell()">Update</button>
+            <button type="button" ng-click="cancelUpdate()">Cancel</button>
+        </form>
+    </div>
+      
 </body>
+
 </html>
